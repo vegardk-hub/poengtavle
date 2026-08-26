@@ -28,20 +28,26 @@ let ui = { view: 'home', childId: null, weekOffset: 0, tab: 'tasks', tasksChildI
    rekkefølge — V og L skal se nøyaktig samme liste. */
 function defaultTasks() {
   const t = (emoji, name, price) => ({ id: uid(), emoji, name, price, kids: null, week: null, archived: false });
+  const multi = (emoji, name) => ({ id: uid(), emoji, name, price: null, kids: null, week: null, archived: false, multi: true });
   return [
     t('🪮', 'Børste håret', 5),
-    t('😴', 'Sove i egen seng', 10),
-    t('🛏️', 'Ha ryddig rom', 20),
-    t('🍽️', 'Tømme oppvaskmaskinen', 15),
+    t('😴', 'Sove i egen seng', 20),
+    t('🛏️', 'Ha ryddig rom', 10),
+    t('🍽️', 'Tømme oppvaskmaskinen', 10),
     t('🗑️', 'Gå ut med søpla', 5),
-    t('🧹', 'Hjelpe foreldre å rydde', 20),
     t('🍳', 'Hjelpe til med middag', 20),
-    t('🛒', 'Handle i butikken', 30),
-    { id: uid(), emoji: '🙋', name: 'Hjelpe foreldre med noe', price: null, kids: null, week: null, archived: false, multi: true }
+    t('🛒', 'Handle i butikken', 20),
+    multi('🔑', 'Passe seg selv'),
+    multi('🙋', 'Hjelpe foreldre med noe')
   ];
 }
 
-const OLD_DEFAULT_TASK_NAMES = ['Sove i egen seng', 'Vaske badet', 'Rydde rommet', 'Tømme oppvaskmaskinen', 'Gå ut med søpla', 'Leke med L', 'Hjelpe pappa med noe'].sort().join('|');
+/* Hvert tidligere standardoppsett listes her, slik at migrate() kan bytte
+   noen til det nyeste automatisk — men bare når ingenting er registrert ennå. */
+const KNOWN_DEFAULT_TASK_NAME_SETS = [
+  ['Sove i egen seng', 'Vaske badet', 'Rydde rommet', 'Tømme oppvaskmaskinen', 'Gå ut med søpla', 'Leke med L', 'Hjelpe pappa med noe'],
+  ['Børste håret', 'Sove i egen seng', 'Ha ryddig rom', 'Tømme oppvaskmaskinen', 'Gå ut med søpla', 'Hjelpe foreldre å rydde', 'Hjelpe til med middag', 'Handle i butikken', 'Hjelpe foreldre med noe']
+].map(names => names.sort().join('|'));
 
 function defaults() {
   return {
@@ -82,7 +88,7 @@ function migrate(s) {
      en voksen får rydde manuelt under ⚙️ Rediger → Oppgaver. */
   if (Array.isArray(s.tasks) && (!s.events || !s.events.length)) {
     const names = s.tasks.filter(t => !t.archived).map(t => t.name).sort().join('|');
-    if (names === OLD_DEFAULT_TASK_NAMES) s.tasks = defaultTasks();
+    if (KNOWN_DEFAULT_TASK_NAME_SETS.indexOf(names) >= 0) s.tasks = defaultTasks();
   }
   return s;
 }
