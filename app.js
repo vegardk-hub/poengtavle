@@ -2,7 +2,7 @@ const KEY = 'poengtavle-v1';
 /* Bumpes for hånd ved hver endring som pushes, sammen med CACHE i sw.js.
    Vises i toppen av appen, slik at det er lett å se om telefonen faktisk
    har hentet siste versjon. */
-const APP_VERSION = 'v6';
+const APP_VERSION = 'v7';
 const DAY_LABELS = ['MAN', 'TIR', 'ONS', 'TOR', 'FRE', 'LØR', 'SØN'];
 const MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
 const EMOJIS = ['⭐', '😴', '🛁', '🛏️', '🍽️', '🗑️', '🧸', '🐕', '👕', '🪴', '🦷', '📚', '🎒', '🧹', '🚲', '🍎', '✏️', '🧦', '🚿', '🧺', '🥣', '🎹'];
@@ -196,6 +196,7 @@ function render() {
   const modus = (ui.view === 'home' || ui.view === 'board') ? 'barn' : 'voksen';
   document.documentElement.dataset.mode = modus;
   document.body.dataset.mode = modus;
+  document.body.dataset.screen = ui.view;
   app.innerHTML = html;
   if (ui.view === 'admin' && ui.tab === 'tasks') bindDrag();
   renderAmountModal();
@@ -211,23 +212,25 @@ function viewHome() {
     <button class="kid" data-act="child" data-id="${c.id}">
       <div class="kid-avatar">${c.emoji}</div>
       <div class="kid-name">${esc(c.name)}</div>
-      <div class="kid-sum"><span class="coin">🪙</span>${kr(balance(c.id))}</div>
-      <div class="subtle">spart opp</div>
     </button>`).join('');
   return `
+    <div class="home-deco" aria-hidden="true">
+      <span style="left:6%;top:9%;animation-delay:0s">🪙</span>
+      <span style="right:8%;top:16%;animation-delay:.7s">⭐</span>
+      <span style="left:11%;bottom:14%;animation-delay:1.3s">✨</span>
+      <span style="right:11%;bottom:20%;animation-delay:.4s">🎈</span>
+      <span style="left:50%;top:5%;animation-delay:1s">🌟</span>
+      <span style="right:44%;bottom:8%;animation-delay:.2s">🪙</span>
+    </div>
     <div class="topbar">
       <div>
-        <h1 class="title">HVEM ER DU?</h1>
+        <h1 class="title">UKEPENGER</h1>
         <div class="version-tag">${APP_VERSION}</div>
       </div>
       <button class="btn" data-act="admin">⚙️ Rediger</button>
     </div>
     <div class="kids">
       ${kids}
-      <button class="kid kid-dashed" data-act="admin" data-goto="settings">
-        <div class="kid-avatar">＋</div>
-        <div>Legg til barn</div>
-      </button>
     </div>`;
 }
 
@@ -272,6 +275,7 @@ function viewBoard() {
   }).join('');
 
   const weekSum = earnedBetween(c.id, keys[0], keys[6]);
+  const totalSaved = balance(c.id);
   const label = ui.weekOffset === 0 ? 'Denne uken' : 'Uke ' + weekNumber(dates[0]);
 
   return `
@@ -285,7 +289,13 @@ function viewBoard() {
         </div>
       </div>
     </div>
-    <div class="pengesekk-row"><div class="pengesekk"><span class="coin">🪙</span><span id="ukesum">${weekSum}</span> kr</div></div>
+    <div class="pengesekk-row">
+      <div class="pengesekk-stack">
+        <div class="pengesekk"><span class="coin">🪙</span><span id="ukesum">${weekSum}</span> kr</div>
+        <div class="pengesekk-caption">spart opp denne uken</div>
+        <div class="pengesekk-total"><span class="coin">💰</span>${kr(totalSaved)} <span class="pengesekk-total-label">spart opp totalt</span></div>
+      </div>
+    </div>
     <div class="week-nav-row">
       <button class="btn btn-icon" data-act="week" data-d="-1" aria-label="Forrige uke">◀</button>
       <button class="btn btn-sm" data-act="week" data-d="0">${label}</button>
