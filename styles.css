@@ -392,25 +392,25 @@ body[data-screen="home"] .topbar { position: relative; z-index: 2; }
 .craft-kid-2 { top: 78%; left: -14%; animation: drift-kid2 54s ease-in-out infinite; animation-delay: -27s; }
 .craft-kid-3 { top: 38%; left: 114%; animation: drift-kid3 46s ease-in-out infinite; animation-delay: -23s; }
 
+/* Rette linjer, ikke en knekk midtveis: rotasjonen er regnet ut fra selve
+   forflytningsvektoren (atan2), så nesen peker nøyaktig dit raketten flyr —
+   hele veien, uten å måtte vri seg underveis. En knekket bane ville krevd at
+   raketten svingte brått midt i bildet for å fortsatt peke riktig vei. */
 @keyframes drift-kid0 {
-  0% { transform: translate(0, 0) rotate(28deg); }
-  50% { transform: translate(65vw, -18vh) rotate(20deg); }
-  100% { transform: translate(130vw, -4vh) rotate(28deg); }
+  from { transform: translate(0, 0) rotate(86deg); }
+  to { transform: translate(130vw, -4vh) rotate(86deg); }
 }
 @keyframes drift-kid1 {
-  0% { transform: translate(0, 0) rotate(208deg); }
-  50% { transform: translate(-65vw, 16vh) rotate(200deg); }
-  100% { transform: translate(-130vw, 6vh) rotate(208deg); }
+  from { transform: translate(0, 0) rotate(-96deg); }
+  to { transform: translate(-130vw, 6vh) rotate(-96deg); }
 }
 @keyframes drift-kid2 {
-  0% { transform: translate(0, 0) rotate(24deg); }
-  50% { transform: translate(60vw, 12vh) rotate(32deg); }
-  100% { transform: translate(128vw, -6vh) rotate(24deg); }
+  from { transform: translate(0, 0) rotate(84deg); }
+  to { transform: translate(128vw, -6vh) rotate(84deg); }
 }
 @keyframes drift-kid3 {
-  0% { transform: translate(0, 0) rotate(212deg); }
-  50% { transform: translate(-60vw, -14vh) rotate(204deg); }
-  100% { transform: translate(-128vw, 8vh) rotate(212deg); }
+  from { transform: translate(0, 0) rotate(-98deg); }
+  to { transform: translate(-128vw, 8vh) rotate(-98deg); }
 }
 
 .rocket-hint {
