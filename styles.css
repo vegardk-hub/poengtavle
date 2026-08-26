@@ -165,6 +165,9 @@ input:focus, select:focus, .btn:focus-visible { outline: 3px solid var(--blue-bg
 .cell.ok { background: var(--green-bg); border-color: var(--green-line); color: var(--green); }
 .cell svg { width: 30px; height: 30px; }
 .cell .mark { display: flex; align-items: center; justify-content: center; }
+.cell .mark.multi { flex-direction: column; gap: 1px; line-height: 1; }
+.multi-sum { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.multi-count { font-size: 10px; font-weight: 600; opacity: .75; }
 .cell.pop .mark { animation: pop .45s ease; }
 @keyframes pop {
   0% { transform: scale(.3) rotate(-18deg); }
@@ -360,6 +363,8 @@ body[data-mode="barn"] .cell.ok {
   background: var(--line); border: 3px solid var(--line); color: #fff;
 }
 body[data-mode="barn"] .cell svg { width: 36px; height: 36px; }
+body[data-mode="barn"] .multi-sum { font-size: 17px; }
+body[data-mode="barn"] .multi-count { font-size: 11px; }
 body[data-mode="barn"] .cell:active { transform: scale(.9); }
 
 body[data-mode="barn"] .legend { gap: 12px; flex-wrap: wrap; font-size: 14px; margin-top: 18px; }

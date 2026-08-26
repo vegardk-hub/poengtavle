@@ -23,25 +23,36 @@ let ui = { view: 'home', childId: null, weekOffset: 0, tab: 'tasks', tasksChildI
 
 /* ---------- lagring ---------- */
 
+/* Rekkefølgen er bevisst: hyppige, små gjøremål øverst, sjeldnere og større
+   nederst. Alle oppgaver gjelder begge barna likt (kids: null), i samme
+   rekkefølge — V og L skal se nøyaktig samme liste. */
+function defaultTasks() {
+  const t = (emoji, name, price) => ({ id: uid(), emoji, name, price, kids: null, week: null, archived: false });
+  return [
+    t('🪮', 'Børste håret', 5),
+    t('😴', 'Sove i egen seng', 10),
+    t('🛏️', 'Ha ryddig rom', 20),
+    t('🍽️', 'Tømme oppvaskmaskinen', 15),
+    t('🗑️', 'Gå ut med søpla', 5),
+    t('🧹', 'Hjelpe foreldre å rydde', 20),
+    t('🍳', 'Hjelpe til med middag', 20),
+    t('🛒', 'Handle i butikken', 30),
+    { id: uid(), emoji: '🙋', name: 'Hjelpe foreldre med noe', price: null, kids: null, week: null, archived: false, multi: true }
+  ];
+}
+
+const OLD_DEFAULT_TASK_NAMES = ['Sove i egen seng', 'Vaske badet', 'Rydde rommet', 'Tømme oppvaskmaskinen', 'Gå ut med søpla', 'Leke med L', 'Hjelpe pappa med noe'].sort().join('|');
+
 function defaults() {
-  const t = (emoji, name, price, kids) => ({ id: uid(), emoji, name, price, kids: kids || null, week: null, archived: false });
   return {
-    version: 2,
+    version: 3,
     lastBackup: null,
     sound: true,
     children: [
       { id: 'c1', name: 'V', emoji: '🤖' },
       { id: 'c2', name: 'L', emoji: '🧸' }
     ],
-    tasks: [
-      t('😴', 'Sove i egen seng', 10),
-      t('🛁', 'Vaske badet', 50),
-      t('🛏️', 'Rydde rommet', 30),
-      t('🍽️', 'Tømme oppvaskmaskinen', 15),
-      t('🗑️', 'Gå ut med søpla', 5),
-      t('🧩', 'Leke med L', null, ['c1']),
-      t('🙋', 'Hjelpe pappa med noe', null)
-    ],
+    tasks: defaultTasks(),
     events: [],
     payouts: []
   };
@@ -66,6 +77,13 @@ function migrate(s) {
       .map(({ status, seen, approvedAt, ...rest }) => rest);
   }
   delete s.pin;
+  /* Byttet ut den gamle standard-oppgavelisten med en ny. Bare trygt å bytte
+     automatisk når ingenting er registrert ennå — ellers lar vi det stå, og
+     en voksen får rydde manuelt under ⚙️ Rediger → Oppgaver. */
+  if (Array.isArray(s.tasks) && (!s.events || !s.events.length)) {
+    const names = s.tasks.filter(t => !t.archived).map(t => t.name).sort().join('|');
+    if (names === OLD_DEFAULT_TASK_NAMES) s.tasks = defaultTasks();
+  }
   return s;
 }
 
@@ -217,14 +235,22 @@ function viewBoard() {
     const col = ROWS[i % ROWS.length];
     const v = `--bg:${col.bg};--line:${col.line};--ink:${col.ink}`;
     const cells = keys.map(k => {
-      const e = eventAt(c.id, t.id, k);
+      const evs = S.events.filter(e => e.childId === c.id && e.taskId === t.id && e.date === k);
       const pop = ui.popCell === c.id + t.id + k ? ' pop' : '';
-      const label = t.name + ' ' + dayName(k) + (e ? ' – gjort' : ' – ikke gjort');
-      return `<button class="cell${e ? ' ok' : ''}${k === today ? ' today' : ''}${pop}" style="${v}" data-act="cell" data-task="${t.id}" data-date="${k}" aria-label="${esc(label)}">${e ? `<span class="mark">${SMILEY}</span>` : ''}</button>`;
+      let inner = '';
+      if (evs.length) {
+        if (t.multi) {
+          const daySum = evs.reduce((s, e) => s + (e.amount || 0), 0);
+          inner = `<span class="mark multi"><span class="multi-sum">${daySum}</span>${evs.length > 1 ? `<span class="multi-count">×${evs.length}</span>` : ''}</span>`;
+        } else {
+          inner = `<span class="mark">${SMILEY}</span>`;
+        }
+      }
+      const label = t.name + ' ' + dayName(k) + (evs.length ? (t.multi ? ' – ' + evs.length + ' gang' + (evs.length === 1 ? '' : 'er') : ' – gjort') : ' – ikke gjort');
+      return `<button class="cell${evs.length ? ' ok' : ''}${k === today ? ' today' : ''}${pop}" style="${v}" data-act="cell" data-task="${t.id}" data-date="${k}" aria-label="${esc(label)}">${inner}</button>`;
     }).join('');
     const sum = keys.reduce((s, k) => {
-      const e = eventAt(c.id, t.id, k);
-      return s + (e ? (e.amount || 0) : 0);
+      return s + S.events.filter(e => e.childId === c.id && e.taskId === t.id && e.date === k).reduce((s2, e) => s2 + (e.amount || 0), 0);
     }, 0);
     return `<div class="task-name" style="${v}"><span class="task-emoji">${t.emoji}</span><span class="tn-tekst">${esc(t.name)}</span></div>
       <div class="task-kr" style="${v}">${t.price === null ? '?' : t.price}</div>
@@ -406,18 +432,38 @@ function renderAmountModal() {
   const t = task(ui.amount.taskId);
   if (!t) { ui.amount = null; el.innerHTML = ''; return; }
   const quick = QUICK_AMOUNTS.map(a => `<button class="btn quick-amt" data-act="quickamt" data-a="${a}">${a} kr</button>`).join('');
+  const noteField = t.multi ? `
+        <div class="adder-row">
+          <input type="text" id="amtnote" placeholder="Noen få ord om hva som ble gjort" style="flex:1;min-width:160px" autofocus>
+        </div>` : '';
+  let list = '';
+  if (t.multi) {
+    const evs = S.events.filter(e => e.childId === ui.childId && e.taskId === t.id && e.date === ui.amount.date);
+    if (evs.length) {
+      list = `<div class="hint">I dag:</div>` + evs.map(e => `
+        <div class="row" style="padding:8px 0">
+          <div class="row-left"><span class="row-title">${e.note ? esc(e.note) : 'Uten merknad'}</span></div>
+          <div class="row-left" style="flex:none;gap:8px">
+            <span>${kr(e.amount || 0)}</span>
+            <button class="btn btn-sm btn-icon" data-act="delentry" data-id="${e.id}" aria-label="Fjern">✕</button>
+          </div>
+        </div>`).join('');
+    }
+  }
   el.innerHTML = `
     <div class="modal-backdrop" data-act="amtcancel">
       <div class="modal-card" data-act="noop">
         <div class="section-title">${t.emoji} ${esc(t.name)}</div>
+        ${list}
         <div class="hint">Hvor mye er dette verdt?</div>
-        <div class="quick-amts">${quick}</div>
-        <div class="adder-row" style="margin-top:14px">
-          <input type="number" inputmode="numeric" id="amtinput" placeholder="Eget beløp" style="flex:1;text-align:right" autofocus> kr
+        ${noteField}
+        <div class="quick-amts" style="margin-top:10px">${quick}</div>
+        <div class="adder-row" style="margin-top:10px">
+          <input type="number" inputmode="numeric" id="amtinput" placeholder="Eget beløp"${t.multi ? '' : ' autofocus'} style="flex:1;text-align:right"> kr
         </div>
         <div class="adder-row" style="justify-content:flex-end;margin-top:16px">
-          <button class="btn" data-act="amtcancel">Avbryt</button>
-          <button class="btn btn-primary" data-act="amtsave">Lagre</button>
+          <button class="btn" data-act="amtcancel">${t.multi ? 'Lukk' : 'Avbryt'}</button>
+          <button class="btn btn-primary" data-act="amtsave">${t.multi ? 'Legg til' : 'Lagre'}</button>
         </div>
       </div>
     </div>`;
@@ -425,8 +471,11 @@ function renderAmountModal() {
 
 function finishAmount(v) {
   const { taskId, date } = ui.amount;
-  ui.amount = null;
-  addEvent(taskId, date, v);
+  const t = task(taskId);
+  const noteEl = document.getElementById('amtnote');
+  const note = noteEl ? noteEl.value.trim() : '';
+  if (!t.multi) ui.amount = null;
+  addEvent(taskId, date, v, note);
 }
 
 /* ---------- moro ---------- */
@@ -534,6 +583,11 @@ function toast(msg) {
 
 function onCell(taskId, date) {
   const t = task(taskId);
+  if (t.multi) {
+    ui.amount = { taskId, date };
+    render();
+    return;
+  }
   const existing = eventAt(ui.childId, taskId, date);
   if (existing) {
     S.events = S.events.filter(x => x !== existing);
@@ -549,10 +603,12 @@ function onCell(taskId, date) {
   addEvent(taskId, date, t.price);
 }
 
-function addEvent(taskId, date, amount) {
+function addEvent(taskId, date, amount, note) {
   const dates = weekDates(ui.weekOffset).map(iso);
   ui.animateFrom = earnedBetween(ui.childId, dates[0], dates[6]);
-  S.events.push({ id: uid(), childId: ui.childId, taskId: taskId, date: date, amount: Math.round(amount) });
+  const ev = { id: uid(), childId: ui.childId, taskId: taskId, date: date, amount: Math.round(amount) };
+  if (note) ev.note = note;
+  S.events.push(ev);
   save();
   ui.popCell = ui.childId + taskId + date;
   ui.celebrate = true;
@@ -601,6 +657,10 @@ document.addEventListener('click', ev => {
     return;
   }
   else if (act === 'amtcancel') { ui.amount = null; }
+  else if (act === 'delentry') {
+    S.events = S.events.filter(x => x.id !== el.dataset.id);
+    save();
+  }
   else if (act === 'deltask') {
     const t = task(el.dataset.id);
     if (!t) return;
