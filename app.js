@@ -2,7 +2,7 @@ const KEY = 'poengtavle-v1';
 /* Bumpes for hånd ved hver endring som pushes, sammen med CACHE i sw.js.
    Vises i toppen av appen, slik at det er lett å se om telefonen faktisk
    har hentet siste versjon. */
-const APP_VERSION = 'v9';
+const APP_VERSION = 'v10';
 const DAY_LABELS = ['MAN', 'TIR', 'ONS', 'TOR', 'FRE', 'LØR', 'SØN'];
 const MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
 const EMOJIS = ['⭐', '😴', '🛁', '🛏️', '🍽️', '🗑️', '🧸', '🐕', '👕', '🪴', '🦷', '📚', '🎒', '🧹', '🚲', '🍎', '✏️', '🧦', '🚿', '🧺', '🥣', '🎹'];
