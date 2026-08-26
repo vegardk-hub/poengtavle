@@ -107,7 +107,7 @@ input:focus, select:focus, .btn:focus-visible { outline: 3px solid var(--blue-bg
 /* --- barnevelger ---
    Kortene er bevisst små og uten beløp: barna skal ikke kunne sammenligne
    hvor mye de andre har tjent bare ved å se på forsiden. */
-.kids { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 132px)); justify-content: center; gap: 14px; max-width: 880px; position: relative; z-index: 1; }
+.kids { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 132px)); justify-content: center; gap: 14px; max-width: 880px; position: relative; z-index: 2; }
 .kid {
   background: var(--card);
   border: 1px solid var(--line-strong);
@@ -126,18 +126,14 @@ input:focus, select:focus, .btn:focus-visible { outline: 3px solid var(--blue-bg
 .avatar-sm { width: 52px; height: 52px; font-size: 28px; margin: 0; }
 .kid-name { font-size: 15px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
 
-/* Store, svakt svevende ikoner bak innholdet på forsiden. */
-.home-deco { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-.home-deco span { position: absolute; font-size: 46px; opacity: .3; animation: deco-float 6s ease-in-out infinite; }
-@keyframes deco-float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-14px) rotate(6deg); } }
-
 /* --- ukerute --- */
 .week-nav-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .pengesekk-row { display: flex; justify-content: center; margin: 4px 0 14px; }
-.pengesekk-stack { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.pengesekk-caption { font-size: 13px; color: var(--ink-soft); }
+.pengesekk-stack { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+/* Etikett og beløp er nå ETT kort, ikke to adskilte ting: teksten sitter
+   inni samme gule pille som tallet, rett over, med minimal avstand. */
 .pengesekk-total {
-  display: flex; align-items: center; gap: 6px; margin-top: 4px;
+  display: flex; align-items: center; gap: 6px;
   background: #fff; border: 2px solid var(--line-strong); border-radius: 999px;
   padding: 5px 14px; font-size: 15px; font-weight: 700; color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -305,17 +301,100 @@ html[data-mode="barn"] {
   background: linear-gradient(180deg, #fff6dc 0%, #ffeef4 42%, #e7f5ff 100%);
   background-attachment: fixed;
 }
-/* Forsiden får noen ekstra, mykt glødende fargeklatter oppå den vanlige
-   gradienten — en litt mer «fantastisk» velkomst enn de rolige innsiden. */
+/* ============================================================
+   Romscenen på forsiden.
+
+   Stjernehimmelen og tåkeglødene er ren CSS (fungerer på alle skjermstørrelser
+   uten beskjæring). Planetene er ekte NASA/USGS-foto (fritt tilgjengelige,
+   det meste falt i det fri) hentet fra Wikimedia Commons — CSS alene klarer
+   ikke å etterligne ekte planettekstur og Saturns ringer troverdig. Saturn-
+   bildet er allerede frilagt (gjennomsiktig bakgrunn), Jupiter og Neptun
+   klippes til sirkler med CSS.
+   ============================================================ */
 body[data-screen="home"] {
   background:
-    radial-gradient(560px circle at 12% 6%, rgba(255, 209, 102, .55), transparent 60%),
-    radial-gradient(520px circle at 88% 14%, rgba(234, 107, 152, .4), transparent 60%),
-    radial-gradient(600px circle at 22% 92%, rgba(61, 151, 232, .32), transparent 60%),
-    radial-gradient(480px circle at 82% 88%, rgba(79, 175, 79, .3), transparent 60%),
-    linear-gradient(180deg, #fff6dc 0%, #ffeef4 42%, #e7f5ff 100%);
+    radial-gradient(ellipse 900px 500px at 50% -8%, rgba(60, 70, 140, .35), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 90% 100%, rgba(40, 90, 110, .3), transparent 65%),
+    linear-gradient(180deg, #050714 0%, #0a0e26 45%, #0d1330 100%);
   background-attachment: fixed;
 }
+body[data-screen="home"] .title { color: #f4f2ff; text-shadow: 0 2px 16px rgba(0, 0, 40, .6); }
+body[data-screen="home"] .version-tag { color: rgba(255, 255, 255, .5); }
+
+.space-scene { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+/* #app har ingen egen stacking context, og negativ z-index viste seg upålitelig
+   for denne faste bakgrunnen — løfter i stedet toppteksten eksplisitt over. */
+body[data-screen="home"] .topbar { position: relative; z-index: 2; }
+
+.stars { position: absolute; inset: -10%; background-repeat: repeat; }
+.stars-far {
+  background-image:
+    radial-gradient(1px 1px at 12px 18px, #fff, transparent),
+    radial-gradient(1px 1px at 54px 80px, #cfe0ff, transparent),
+    radial-gradient(1.3px 1.3px at 96px 34px, #fff, transparent),
+    radial-gradient(1px 1px at 140px 112px, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 175px 60px, #dfe8ff, transparent),
+    radial-gradient(1px 1px at 205px 150px, #fff, transparent),
+    radial-gradient(1px 1px at 30px 170px, #fff, transparent);
+  background-size: 220px 220px;
+  opacity: .5;
+  animation: stars-drift 200s linear infinite;
+}
+.stars-near {
+  background-image:
+    radial-gradient(1.6px 1.6px at 30px 40px, #fff, transparent),
+    radial-gradient(2px 2px at 100px 20px, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 160px 92px, #cfe0ff, transparent),
+    radial-gradient(2.2px 2.2px at 60px 132px, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 190px 156px, #fff, transparent),
+    radial-gradient(1.8px 1.8px at 220px 60px, #fff, transparent);
+  background-size: 260px 260px;
+  opacity: .8;
+  animation: stars-drift 130s linear infinite reverse;
+}
+@keyframes stars-drift { from { background-position: 0 0; } to { background-position: 400px 260px; } }
+
+.nebula { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .3; }
+.nebula-a { width: 340px; height: 260px; left: -70px; top: 18%; background: radial-gradient(circle, rgba(120, 80, 200, .8), transparent 70%); }
+.nebula-b { width: 300px; height: 300px; right: -90px; bottom: -40px; background: radial-gradient(circle, rgba(30, 150, 170, .7), transparent 70%); }
+
+.planet-photo {
+  position: absolute; border-radius: 50%; object-fit: cover;
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, .55));
+}
+.planet-jupiter { width: 132px; height: 132px; top: -30px; right: -26px; }
+.planet-neptune { width: 62px; height: 62px; right: 12%; bottom: -14px; }
+.planet-saturn { width: 190px; height: auto; left: -50px; bottom: 6%; object-fit: contain; border-radius: 0; transform: rotate(-6deg); }
+
+.craft { position: absolute; filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .45)); }
+.craft-sat1 { top: 20%; left: -12%; animation: drift-sat1 52s linear infinite; }
+.craft-sat2 { top: 66%; left: 110%; animation: drift-sat2 64s linear infinite; animation-delay: -18s; }
+.craft-rocket1 { top: 55%; left: -10%; animation: drift-rocket1 38s ease-in-out infinite; }
+.craft-rocket2 { top: 8%; left: 108%; animation: drift-rocket2 46s ease-in-out infinite; animation-delay: -14s; }
+
+.spin { animation: spin 16s linear infinite; }
+.spin-slow { animation-duration: 24s; animation-direction: reverse; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+@keyframes drift-sat1 {
+  from { transform: translate(0, 0) rotate(-4deg); }
+  to { transform: translate(124vw, -14vh) rotate(-4deg); }
+}
+@keyframes drift-sat2 {
+  from { transform: translate(0, 0) rotate(5deg); }
+  to { transform: translate(-124vw, 10vh) rotate(5deg); }
+}
+@keyframes drift-rocket1 {
+  0% { transform: translate(0, 0) rotate(28deg); }
+  50% { transform: translate(65vw, -16vh) rotate(20deg); }
+  100% { transform: translate(130vw, -4vh) rotate(28deg); }
+}
+@keyframes drift-rocket2 {
+  0% { transform: translate(0, 0) rotate(208deg); }
+  50% { transform: translate(-65vw, 14vh) rotate(200deg); }
+  100% { transform: translate(-130vw, 6vh) rotate(208deg); }
+}
+
 body[data-mode="barn"] {
   font-family: "Chalkboard SE", "Comic Sans MS", "Segoe UI Rounded", sans-serif;
 }
@@ -345,14 +424,20 @@ body[data-mode="barn"] .kid-avatar { border: 3px solid #ffd166; animation: hopp 
 body[data-mode="barn"] .kid-name { font-size: 17px; }
 .coin { font-size: .9em; }
 
-/* --- ukeruta --- */
+/* --- ukeruta ---
+   Etikett og beløp er ETT kort (samme pille), ikke to adskilte elementer:
+   overskriften ligger rett over tallet med minimal avstand mellom dem. */
 .pengesekk {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: #fff3c4; border: 3px solid #f2b705; color: #7d5200;
-  border-radius: 999px; padding: 8px 20px; font-size: 26px; font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  border-radius: 26px; padding: 9px 24px 12px;
 }
-.pengesekk.rister { animation: rist .6s ease; }
+.pengesekk-label { font-size: 17px; font-weight: 700; letter-spacing: .02em; }
+.pengesekk-amount {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.pengesekk-amount.rister { animation: rist .6s ease; }
 
 body[data-mode="barn"] .board { gap: 7px; }
 body[data-mode="barn"] .board-head {
@@ -401,7 +486,9 @@ body[data-mode="barn"] .legend span {
   .title { font-size: 19px; }
   body[data-mode="barn"] .title { font-size: 27px; }
   .board-scroll { margin: 0 -12px; padding: 0 12px 2px; }
-  .pengesekk { font-size: 21px; padding: 7px 16px; }
+  .pengesekk-amount { font-size: 25px; }
+  .pengesekk-label { font-size: 15px; }
+  .pengesekk { padding: 8px 18px 10px; }
   /* Lange oppgavenavn brekker om til flere linjer i denne bredden. Stables
      radens to grupper i stedet for å dele én linje, kolliderer ikke prisfeltet
      og "alle barn"-merket med hverandre midt i navnet. */
@@ -410,5 +497,8 @@ body[data-mode="barn"] .legend span {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gnist, .konfetti, body[data-mode="barn"] .kid-avatar, .pengesekk.rister, .home-deco span { animation: none; }
+  .gnist, .konfetti, body[data-mode="barn"] .kid-avatar, .pengesekk-amount.rister { animation: none; }
+  .stars, .craft, .spin { animation: none; }
+  .craft-sat1, .craft-rocket1 { left: 30%; }
+  .craft-sat2, .craft-rocket2 { left: 68%; }
 }

@@ -2,7 +2,7 @@ const KEY = 'poengtavle-v1';
 /* Bumpes for hånd ved hver endring som pushes, sammen med CACHE i sw.js.
    Vises i toppen av appen, slik at det er lett å se om telefonen faktisk
    har hentet siste versjon. */
-const APP_VERSION = 'v7';
+const APP_VERSION = 'v8';
 const DAY_LABELS = ['MAN', 'TIR', 'ONS', 'TOR', 'FRE', 'LØR', 'SØN'];
 const MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
 const EMOJIS = ['⭐', '😴', '🛁', '🛏️', '🍽️', '🗑️', '🧸', '🐕', '👕', '🪴', '🦷', '📚', '🎒', '🧹', '🚲', '🍎', '✏️', '🧦', '🚿', '🧺', '🥣', '🎹'];
@@ -207,6 +207,12 @@ function render() {
   ui.popCell = null;
 }
 
+/* Enkle romfartøy tegnet som SVG (ikke emoji) for et roligere, mer
+   fotografisk preg. Ingen <defs>/id-er, siden markeringen settes inn flere
+   ganger på siden og duplikate id-er ikke er lov. */
+const SATELLITE_SVG = `<svg viewBox="0 0 64 40" width="52" height="33"><rect x="2" y="16" width="17" height="8" rx="1" fill="#3a72b8"/><rect x="2" y="16" width="17" height="8" rx="1" fill="#28518a" opacity=".5"/><line x1="4" y1="18" x2="17" y2="18" stroke="#8fb6e6" stroke-width=".6"/><line x1="4" y1="22" x2="17" y2="22" stroke="#8fb6e6" stroke-width=".6"/><rect x="45" y="16" width="17" height="8" rx="1" fill="#3a72b8"/><line x1="47" y1="18" x2="60" y2="18" stroke="#8fb6e6" stroke-width=".6"/><line x1="47" y1="22" x2="60" y2="22" stroke="#8fb6e6" stroke-width=".6"/><rect x="24" y="13" width="16" height="14" rx="2" fill="#dfe3ea"/><rect x="24" y="20" width="16" height="7" rx="2" fill="#b7bec9"/><circle cx="32" cy="18" r="3" fill="#54606f"/><line x1="32" y1="13" x2="32" y2="4" stroke="#b7bec9" stroke-width="1.4"/><circle cx="32" cy="4" r="1.8" fill="#f0c65a"/></svg>`;
+const ROCKET_SVG = `<svg viewBox="0 0 40 90" width="30" height="68"><path d="M20 2c8 15 10 30 10 46H10c0-16 2-31 10-46Z" fill="#e9ecf2"/><path d="M20 2c5 12 7 24 7 38h-7Z" fill="#c4cad6"/><circle cx="20" cy="29" r="4.6" fill="#4d84c9"/><circle cx="20" cy="29" r="4.6" fill="none" stroke="#2f5d95" stroke-width="1"/><path d="M10 48 2 66l8-6Z" fill="#c0392b"/><path d="M30 48l8 18-8-6Z" fill="#c0392b"/><rect x="10" y="48" width="20" height="13" fill="#dfe3ea"/><path d="M13 61 20 82 27 61Z" fill="#f6a623"/><path d="M15.5 61 20 75 24.5 61Z" fill="#ffe08a"/></svg>`;
+
 function viewHome() {
   const kids = S.children.map(c => `
     <button class="kid" data-act="child" data-id="${c.id}">
@@ -214,13 +220,18 @@ function viewHome() {
       <div class="kid-name">${esc(c.name)}</div>
     </button>`).join('');
   return `
-    <div class="home-deco" aria-hidden="true">
-      <span style="left:6%;top:9%;animation-delay:0s">🪙</span>
-      <span style="right:8%;top:16%;animation-delay:.7s">⭐</span>
-      <span style="left:11%;bottom:14%;animation-delay:1.3s">✨</span>
-      <span style="right:11%;bottom:20%;animation-delay:.4s">🎈</span>
-      <span style="left:50%;top:5%;animation-delay:1s">🌟</span>
-      <span style="right:44%;bottom:8%;animation-delay:.2s">🪙</span>
+    <div class="space-scene" aria-hidden="true">
+      <div class="stars stars-far"></div>
+      <div class="stars stars-near"></div>
+      <div class="nebula nebula-a"></div>
+      <div class="nebula nebula-b"></div>
+      <img class="planet-photo planet-jupiter" src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg" alt="">
+      <img class="planet-photo planet-neptune" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Neptune_Full.jpg/500px-Neptune_Full.jpg" alt="">
+      <img class="planet-photo planet-saturn" src="https://upload.wikimedia.org/wikipedia/commons/0/0a/Transparent_Saturn.png" alt="">
+      <div class="craft craft-sat1"><div class="spin">${SATELLITE_SVG}</div></div>
+      <div class="craft craft-sat2"><div class="spin spin-slow">${SATELLITE_SVG}</div></div>
+      <div class="craft craft-rocket1">${ROCKET_SVG}</div>
+      <div class="craft craft-rocket2">${ROCKET_SVG}</div>
     </div>
     <div class="topbar">
       <div>
@@ -291,8 +302,10 @@ function viewBoard() {
     </div>
     <div class="pengesekk-row">
       <div class="pengesekk-stack">
-        <div class="pengesekk"><span class="coin">🪙</span><span id="ukesum">${weekSum}</span> kr</div>
-        <div class="pengesekk-caption">spart opp denne uken</div>
+        <div class="pengesekk">
+          <div class="pengesekk-label">Spart opp denne uken</div>
+          <div class="pengesekk-amount"><span class="coin">🪙</span><span id="ukesum">${weekSum}</span> kr</div>
+        </div>
         <div class="pengesekk-total"><span class="coin">💰</span>${kr(totalSaved)} <span class="pengesekk-total-label">spart opp totalt</span></div>
       </div>
     </div>
@@ -444,6 +457,10 @@ function tabSettings() {
         <button class="btn" data-act="restorepick">Gjenopprett fra fil</button>
         <input type="file" id="restorefile" accept="application/json" style="display:none">
       </div>
+    </div>
+    <div>
+      <div class="section-title">Bilder på forsiden</div>
+      <div class="hint">Jupiter og Neptun: NASA/USGS (falt i det fri). Saturn: SpiciousS, Wikimedia Commons, lisens <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</div>
     </div>
   </div>`;
 }
