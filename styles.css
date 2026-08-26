@@ -104,19 +104,8 @@ input:focus, select:focus, .btn:focus-visible { outline: 3px solid var(--blue-bg
   padding: 18px;
 }
 
-/* --- barnevelger ---
-   Kortene er bevisst små og uten beløp: barna skal ikke kunne sammenligne
-   hvor mye de andre har tjent bare ved å se på forsiden. */
-.kids { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 132px)); justify-content: center; gap: 14px; max-width: 880px; position: relative; z-index: 2; }
-.kid {
-  background: var(--card);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-lg);
-  padding: 14px 8px;
-  text-align: center;
-  transition: transform .08s ease;
-}
-.kid:active { transform: scale(.98); }
+/* --- kid-avatar/-name: brukes nå bare i topplinjen på et barns egen side,
+   siden barnevalget på forsiden ble erstattet av rakettene. --- */
 .kid-avatar {
   width: 56px; height: 56px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -369,8 +358,6 @@ body[data-screen="home"] .topbar { position: relative; z-index: 2; }
 .craft { position: absolute; filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .45)); }
 .craft-sat1 { top: 20%; left: -12%; animation: drift-sat1 52s linear infinite; }
 .craft-sat2 { top: 66%; left: 110%; animation: drift-sat2 64s linear infinite; animation-delay: -18s; }
-.craft-rocket1 { top: 55%; left: -10%; animation: drift-rocket1 38s ease-in-out infinite; }
-.craft-rocket2 { top: 8%; left: 108%; animation: drift-rocket2 46s ease-in-out infinite; animation-delay: -14s; }
 
 .spin { animation: spin 16s linear infinite; }
 .spin-slow { animation-duration: 24s; animation-direction: reverse; }
@@ -384,15 +371,49 @@ body[data-screen="home"] .topbar { position: relative; z-index: 2; }
   from { transform: translate(0, 0) rotate(5deg); }
   to { transform: translate(-124vw, 10vh) rotate(5deg); }
 }
-@keyframes drift-rocket1 {
+
+/* --- rakett-knappene: dette ER barnevalget nå ---
+   Banene holder seg under ca. 20% høyde, slik at de aldri driver bak
+   topplinjen (som ligger over scenen og ellers ville blokkert trykk der). */
+.craft-kid {
+  pointer-events: auto; cursor: pointer;
+  background: none; border: none; padding: 14px; margin: -14px;
+  -webkit-tap-highlight-color: transparent;
+}
+.craft-kid .tap { display: block; transition: transform .1s ease; }
+.craft-kid:active .tap { transform: scale(.88); }
+.craft-kid:focus-visible { outline: 3px solid #fff; outline-offset: 4px; border-radius: 50%; }
+
+.craft-kid-0 { top: 58%; left: -12%; animation: drift-kid0 42s ease-in-out infinite; }
+.craft-kid-1 { top: 24%; left: 112%; animation: drift-kid1 48s ease-in-out infinite; animation-delay: -16s; }
+.craft-kid-2 { top: 78%; left: -14%; animation: drift-kid2 54s ease-in-out infinite; animation-delay: -30s; }
+.craft-kid-3 { top: 38%; left: 114%; animation: drift-kid3 46s ease-in-out infinite; animation-delay: -6s; }
+
+@keyframes drift-kid0 {
   0% { transform: translate(0, 0) rotate(28deg); }
-  50% { transform: translate(65vw, -16vh) rotate(20deg); }
+  50% { transform: translate(65vw, -18vh) rotate(20deg); }
   100% { transform: translate(130vw, -4vh) rotate(28deg); }
 }
-@keyframes drift-rocket2 {
+@keyframes drift-kid1 {
   0% { transform: translate(0, 0) rotate(208deg); }
-  50% { transform: translate(-65vw, 14vh) rotate(200deg); }
+  50% { transform: translate(-65vw, 16vh) rotate(200deg); }
   100% { transform: translate(-130vw, 6vh) rotate(208deg); }
+}
+@keyframes drift-kid2 {
+  0% { transform: translate(0, 0) rotate(24deg); }
+  50% { transform: translate(60vw, 12vh) rotate(32deg); }
+  100% { transform: translate(128vw, -6vh) rotate(24deg); }
+}
+@keyframes drift-kid3 {
+  0% { transform: translate(0, 0) rotate(212deg); }
+  50% { transform: translate(-60vw, -14vh) rotate(204deg); }
+  100% { transform: translate(-128vw, 8vh) rotate(212deg); }
+}
+
+.rocket-hint {
+  position: relative; z-index: 2;
+  text-align: center; color: rgba(255, 255, 255, .75);
+  font-size: 15px; margin-top: 2px;
 }
 
 body[data-mode="barn"] {
@@ -414,14 +435,8 @@ body[data-mode="barn"] .card {
   box-shadow: 0 8px 0 rgba(120, 110, 80, .10);
 }
 
-/* --- barnevelgeren --- */
-body[data-mode="barn"] .kid {
-  position: relative; border: 3px solid #ffd166; border-radius: 24px; padding: 16px 8px;
-  box-shadow: 0 6px 0 rgba(190, 150, 40, .22);
-}
-body[data-mode="barn"] .kid:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(190, 150, 40, .22); }
+/* --- kid-avatar i topplinjen på et barns egen side --- */
 body[data-mode="barn"] .kid-avatar { border: 3px solid #ffd166; animation: hopp 3.5s ease-in-out infinite; }
-body[data-mode="barn"] .kid-name { font-size: 17px; }
 .coin { font-size: .9em; }
 
 /* --- ukeruta ---
@@ -499,6 +514,10 @@ body[data-mode="barn"] .legend span {
 @media (prefers-reduced-motion: reduce) {
   .gnist, .konfetti, body[data-mode="barn"] .kid-avatar, .pengesekk-amount.rister { animation: none; }
   .stars, .craft, .spin { animation: none; }
-  .craft-sat1, .craft-rocket1 { left: 30%; }
-  .craft-sat2, .craft-rocket2 { left: 68%; }
+  .craft-sat1 { left: 15%; }
+  .craft-sat2 { left: 80%; }
+  .craft-kid-0 { left: 20%; top: 45%; }
+  .craft-kid-1 { left: 62%; top: 30%; }
+  .craft-kid-2 { left: 38%; top: 68%; }
+  .craft-kid-3 { left: 78%; top: 55%; }
 }

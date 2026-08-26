@@ -1,4 +1,4 @@
-const CACHE = 'poengtavle-v8';
+const CACHE = 'poengtavle-v9';
 const FILES = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {

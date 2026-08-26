@@ -2,7 +2,7 @@ const KEY = 'poengtavle-v1';
 /* Bumpes for hånd ved hver endring som pushes, sammen med CACHE i sw.js.
    Vises i toppen av appen, slik at det er lett å se om telefonen faktisk
    har hentet siste versjon. */
-const APP_VERSION = 'v8';
+const APP_VERSION = 'v9';
 const DAY_LABELS = ['MAN', 'TIR', 'ONS', 'TOR', 'FRE', 'LØR', 'SØN'];
 const MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
 const EMOJIS = ['⭐', '😴', '🛁', '🛏️', '🍽️', '🗑️', '🧸', '🐕', '👕', '🪴', '🦷', '📚', '🎒', '🧹', '🚲', '🍎', '✏️', '🧦', '🚿', '🧺', '🥣', '🎹'];
@@ -211,13 +211,18 @@ function render() {
    fotografisk preg. Ingen <defs>/id-er, siden markeringen settes inn flere
    ganger på siden og duplikate id-er ikke er lov. */
 const SATELLITE_SVG = `<svg viewBox="0 0 64 40" width="52" height="33"><rect x="2" y="16" width="17" height="8" rx="1" fill="#3a72b8"/><rect x="2" y="16" width="17" height="8" rx="1" fill="#28518a" opacity=".5"/><line x1="4" y1="18" x2="17" y2="18" stroke="#8fb6e6" stroke-width=".6"/><line x1="4" y1="22" x2="17" y2="22" stroke="#8fb6e6" stroke-width=".6"/><rect x="45" y="16" width="17" height="8" rx="1" fill="#3a72b8"/><line x1="47" y1="18" x2="60" y2="18" stroke="#8fb6e6" stroke-width=".6"/><line x1="47" y1="22" x2="60" y2="22" stroke="#8fb6e6" stroke-width=".6"/><rect x="24" y="13" width="16" height="14" rx="2" fill="#dfe3ea"/><rect x="24" y="20" width="16" height="7" rx="2" fill="#b7bec9"/><circle cx="32" cy="18" r="3" fill="#54606f"/><line x1="32" y1="13" x2="32" y2="4" stroke="#b7bec9" stroke-width="1.4"/><circle cx="32" cy="4" r="1.8" fill="#f0c65a"/></svg>`;
-const ROCKET_SVG = `<svg viewBox="0 0 40 90" width="30" height="68"><path d="M20 2c8 15 10 30 10 46H10c0-16 2-31 10-46Z" fill="#e9ecf2"/><path d="M20 2c5 12 7 24 7 38h-7Z" fill="#c4cad6"/><circle cx="20" cy="29" r="4.6" fill="#4d84c9"/><circle cx="20" cy="29" r="4.6" fill="none" stroke="#2f5d95" stroke-width="1"/><path d="M10 48 2 66l8-6Z" fill="#c0392b"/><path d="M30 48l8 18-8-6Z" fill="#c0392b"/><rect x="10" y="48" width="20" height="13" fill="#dfe3ea"/><path d="M13 61 20 82 27 61Z" fill="#f6a623"/><path d="M15.5 61 20 75 24.5 61Z" fill="#ffe08a"/></svg>`;
+
+/* Raketten er selve inngangsknappen til hvert barn nå: bokstaven fra navnet
+   sitter der vinduet satt før, som et oppdragsmerke. */
+function rocketSvg(name) {
+  const letter = esc((name || '?').trim().slice(0, 2).toUpperCase());
+  return `<svg viewBox="0 0 40 90" width="58" height="131"><path d="M20 2c8 15 10 30 10 46H10c0-16 2-31 10-46Z" fill="#e9ecf2"/><path d="M20 2c5 12 7 24 7 38h-7Z" fill="#c4cad6"/><circle cx="20" cy="30" r="8.2" fill="#fff"/><circle cx="20" cy="30" r="8.2" fill="none" stroke="#b7bec9" stroke-width="1"/><text x="20" y="34.5" text-anchor="middle" font-family="-apple-system,'Segoe UI',sans-serif" font-size="12" font-weight="800" fill="#23241f">${letter}</text><path d="M10 48 2 66l8-6Z" fill="#c0392b"/><path d="M30 48l8 18-8-6Z" fill="#c0392b"/><rect x="10" y="48" width="20" height="13" fill="#dfe3ea"/><path d="M13 61 20 82 27 61Z" fill="#f6a623"/><path d="M15.5 61 20 75 24.5 61Z" fill="#ffe08a"/></svg>`;
+}
 
 function viewHome() {
-  const kids = S.children.map(c => `
-    <button class="kid" data-act="child" data-id="${c.id}">
-      <div class="kid-avatar">${c.emoji}</div>
-      <div class="kid-name">${esc(c.name)}</div>
+  const rockets = S.children.map((c, i) => `
+    <button class="craft craft-kid craft-kid-${i % 4}" data-act="child" data-id="${c.id}" aria-label="Gå til ${esc(c.name)} sin side">
+      <span class="tap">${rocketSvg(c.name)}</span>
     </button>`).join('');
   return `
     <div class="space-scene" aria-hidden="true">
@@ -230,8 +235,7 @@ function viewHome() {
       <img class="planet-photo planet-saturn" src="https://upload.wikimedia.org/wikipedia/commons/0/0a/Transparent_Saturn.png" alt="">
       <div class="craft craft-sat1"><div class="spin">${SATELLITE_SVG}</div></div>
       <div class="craft craft-sat2"><div class="spin spin-slow">${SATELLITE_SVG}</div></div>
-      <div class="craft craft-rocket1">${ROCKET_SVG}</div>
-      <div class="craft craft-rocket2">${ROCKET_SVG}</div>
+      ${rockets}
     </div>
     <div class="topbar">
       <div>
@@ -240,9 +244,7 @@ function viewHome() {
       </div>
       <button class="btn" data-act="admin">⚙️ Rediger</button>
     </div>
-    <div class="kids">
-      ${kids}
-    </div>`;
+    <div class="rocket-hint">Trykk på raketten din! 🚀</div>`;
 }
 
 function viewBoard() {
