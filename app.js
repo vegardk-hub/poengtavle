@@ -1,4 +1,8 @@
 const KEY = 'poengtavle-v1';
+/* Bumpes for hånd ved hver endring som pushes, sammen med CACHE i sw.js.
+   Vises i toppen av appen, slik at det er lett å se om telefonen faktisk
+   har hentet siste versjon. */
+const APP_VERSION = 'v6';
 const DAY_LABELS = ['MAN', 'TIR', 'ONS', 'TOR', 'FRE', 'LØR', 'SØN'];
 const MONTHS = ['januar', 'februar', 'mars', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'desember'];
 const EMOJIS = ['⭐', '😴', '🛁', '🛏️', '🍽️', '🗑️', '🧸', '🐕', '👕', '🪴', '🦷', '📚', '🎒', '🧹', '🚲', '🍎', '✏️', '🧦', '🚿', '🧺', '🥣', '🎹'];
@@ -212,7 +216,10 @@ function viewHome() {
     </button>`).join('');
   return `
     <div class="topbar">
-      <h1 class="title">HVEM ER DU?</h1>
+      <div>
+        <h1 class="title">HVEM ER DU?</h1>
+        <div class="version-tag">${APP_VERSION}</div>
+      </div>
       <button class="btn" data-act="admin">⚙️ Rediger</button>
     </div>
     <div class="kids">
@@ -312,6 +319,7 @@ function viewAdmin() {
       <div class="topbar-left">
         <button class="btn btn-ghost" data-act="home" aria-label="Tilbake">←</button>
         <h1 class="title" style="font-size:19px">Rediger</h1>
+        <div class="version-tag">${APP_VERSION}</div>
       </div>
     </div>
     <div class="tabs">

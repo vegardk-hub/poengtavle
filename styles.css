@@ -85,6 +85,7 @@ input:focus, select:focus, .btn:focus-visible { outline: 3px solid var(--blue-bg
 
 .title { font-size: 22px; font-weight: 700; letter-spacing: .04em; margin: 0; }
 .subtle { color: var(--ink-soft); font-size: 14px; }
+.version-tag { color: var(--ink-faint); font-size: 12px; font-variant-numeric: tabular-nums; margin-top: 2px; }
 
 .badge {
   background: var(--amber-bg);
